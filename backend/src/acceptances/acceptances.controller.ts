@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
 import { AcceptancesService } from './acceptances.service';
 import { CreateAcceptanceDto } from './dto/create-acceptance.dto';
 import { UpdateAcceptanceDto } from './dto/update-acceptance.dto';
@@ -12,9 +12,14 @@ export class AcceptancesController {
     return this.acceptancesService.create(createAcceptanceDto);
   }
 
+  @Get('project/:projectId')
+  findByProject(@Param('projectId') projectId: string) {
+    return this.acceptancesService.findByProject(+projectId);
+  }
+
   @Get()
-  findAll() {
-    return this.acceptancesService.findAll();
+  findAll(@Query('projectId') projectId?: string) {
+    return this.acceptancesService.findAll(projectId ? +projectId : undefined);
   }
 
   @Get(':id')

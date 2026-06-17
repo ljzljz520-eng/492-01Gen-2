@@ -17,8 +17,16 @@ export class DamagePhotosService {
     return this.damagePhotosRepository.save(damagePhoto);
   }
 
-  findAll() {
-    return this.damagePhotosRepository.find();
+  findAll(dismantleId?: number) {
+    const where: any = {};
+    if (dismantleId) {
+      where.dismantleId = dismantleId;
+    }
+    return this.damagePhotosRepository.find({ where });
+  }
+
+  findByDismantle(dismantleId: number) {
+    return this.damagePhotosRepository.find({ where: { dismantleId } });
   }
 
   async findOne(id: number) {

@@ -44,6 +44,7 @@ const Schedules: React.FC = () => {
   const [projectFilter, setProjectFilter] = useState<number | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>('');
   const [selectedWorker, setSelectedWorker] = useState<Worker | null>(null);
+  const [formValues, setFormValues] = useState<any>({});
 
   const fetchSchedules = async () => {
     setLoading(true);
@@ -109,6 +110,14 @@ const Schedules: React.FC = () => {
     }
   };
 
+  const filteredWorkers = workers.filter((w) => {
+    if (!w.isAvailable) return false;
+    if (!w.hasCertificate) return false;
+    const isNightShift = formValues.shift === 'night' || formValues.nightWork;
+    if (isNightShift && !w.hasNightWorkPermit) return false;
+    return true;
+  });
+
   const handleWorkerChange = (workerId: number) => {
     const worker = workers.find((w) => w.id === workerId);
     setSelectedWorker(worker || null);
@@ -147,15 +156,20 @@ const Schedules: React.FC = () => {
   };
 
   const submitSchedule = async (data: any) => {
-    if (editingSchedule) {
-      await schedulesApi.update(editingSchedule.id, data);
-      message.success('更新成功');
-    } else {
-      await schedulesApi.create(data);
-      message.success('创建成功');
+    try {
+      if (editingSchedule) {
+        await schedulesApi.update(editingSchedule.id, data);
+        message.success('更新成功');
+      } else {
+        await schedulesApi.create(data);
+        message.success('创建成功');
+      }
+      setModalVisible(false);
+      fetchSchedules();
+    } catch (error: any) {
+      const errorMsg = error?.response?.data?.message || error?.message || '操作失败';
+      message.error(Array.isArray(errorMsg) ? errorMsg[0] : errorMsg);
     }
-    setModalVisible(false);
-    fetchSchedules();
   };
 
   const filteredSchedules = schedules.filter((schedule) => {
@@ -277,7 +291,9 @@ const Schedules: React.FC = () => {
         okText="确定"
         cancelText="取消"
       >
-        <Form form={form} layout="vertical">
+        <Form form={form} layout="vertical" onValuesChange={(changed) => {
+          setFormValues((prev: any) => ({ ...prev, ...changed }));
+        }}>
           <Row gutter={16}>
             <Col span={12}>
               <Form.Item name="projectId" label="项目" rules={[{ required: true, message: '请选择项目' }]}>
@@ -292,14 +308,17 @@ const Schedules: React.FC = () => {
             </Col>
             <Col span={12}>
               <Form.Item name="workerId" label="人员" rules={[{ required: true, message: '请选择人员' }]}>
-                <Select placeholder="请选择人员" onChange={handleWorkerChange}>
-                  {workers
-                    .filter((w) => w.isAvailable)
-                    .map((worker) => (
-                      <Select.Option key={worker.id} value={worker.id}>
-                        {worker.name} - {worker.type === 'carpenter' ? '木工' : worker.type === 'electrician' ? '电工' : worker.type === 'decorator' ? '美工' : '叉车司机'}
-                      </Select.Option>
-                    ))}
+                <Select
+                  placeholder="请选择人员"
+                  onChange={handleWorkerChange}
+                  notFoundContent="暂无符合条件的人员（需有证、可用，夜班需夜间许可）"
+                >
+                  {filteredWorkers.map((worker) => (
+                    <Select.Option key={worker.id} value={worker.id}>
+                      {worker.name} - {worker.type === 'carpenter' ? '木工' : worker.type === 'electrician' ? '电工' : worker.type === 'decorator' ? '美工' : '叉车司机'}
+                      {!worker.hasNightWorkPermit && ' (无夜工许可)'}
+                    </Select.Option>
+                  ))}
                 </Select>
               </Form.Item>
             </Col>

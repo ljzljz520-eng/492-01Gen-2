@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
 import { DismantlesService } from './dismantles.service';
 import { CreateDismantleDto } from './dto/create-dismantle.dto';
 import { UpdateDismantleDto } from './dto/update-dismantle.dto';
@@ -12,9 +12,14 @@ export class DismantlesController {
     return this.dismantlesService.create(createDismantleDto);
   }
 
+  @Get('project/:projectId')
+  findByProject(@Param('projectId') projectId: string) {
+    return this.dismantlesService.findByProject(+projectId);
+  }
+
   @Get()
-  findAll() {
-    return this.dismantlesService.findAll();
+  findAll(@Query('projectId') projectId?: string) {
+    return this.dismantlesService.findAll(projectId ? +projectId : undefined);
   }
 
   @Get(':id')

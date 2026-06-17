@@ -17,8 +17,16 @@ export class AcceptancesService {
     return this.acceptancesRepository.save(acceptance);
   }
 
-  findAll() {
-    return this.acceptancesRepository.find();
+  findAll(projectId?: number) {
+    const where: any = {};
+    if (projectId) {
+      where.projectId = projectId;
+    }
+    return this.acceptancesRepository.find({ where });
+  }
+
+  findByProject(projectId: number) {
+    return this.acceptancesRepository.find({ where: { projectId } });
   }
 
   async findOne(id: number) {

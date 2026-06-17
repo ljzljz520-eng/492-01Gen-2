@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
 import { WorkersService } from './workers.service';
 import { CreateWorkerDto } from './dto/create-worker.dto';
 import { UpdateWorkerDto } from './dto/update-worker.dto';
@@ -12,9 +12,17 @@ export class WorkersController {
     return this.workersService.create(createWorkerDto);
   }
 
+  @Get('available')
+  findAvailable(
+    @Query('type') type?: string,
+    @Query('needNightPermit') needNightPermit?: string,
+  ) {
+    return this.workersService.findAvailable(type, needNightPermit === 'true');
+  }
+
   @Get()
-  findAll() {
-    return this.workersService.findAll();
+  findAll(@Query('type') type?: string) {
+    return this.workersService.findAll(type);
   }
 
   @Get(':id')

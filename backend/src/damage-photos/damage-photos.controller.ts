@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
 import { DamagePhotosService } from './damage-photos.service';
 import { CreateDamagePhotoDto } from './dto/create-damage-photo.dto';
 import { UpdateDamagePhotoDto } from './dto/update-damage-photo.dto';
@@ -12,9 +12,14 @@ export class DamagePhotosController {
     return this.damagePhotosService.create(createDamagePhotoDto);
   }
 
+  @Get('dismantle/:dismantleId')
+  findByDismantle(@Param('dismantleId') dismantleId: string) {
+    return this.damagePhotosService.findByDismantle(+dismantleId);
+  }
+
   @Get()
-  findAll() {
-    return this.damagePhotosService.findAll();
+  findAll(@Query('dismantleId') dismantleId?: string) {
+    return this.damagePhotosService.findAll(dismantleId ? +dismantleId : undefined);
   }
 
   @Get(':id')

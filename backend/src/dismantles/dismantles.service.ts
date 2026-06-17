@@ -17,12 +17,29 @@ export class DismantlesService {
     return this.dismantlesRepository.save(dismantle);
   }
 
-  findAll() {
-    return this.dismantlesRepository.find();
+  findAll(projectId?: number) {
+    const where: any = {};
+    if (projectId) {
+      where.projectId = projectId;
+    }
+    return this.dismantlesRepository.find({
+      where,
+      relations: ['damagePhotos'],
+    });
+  }
+
+  findByProject(projectId: number) {
+    return this.dismantlesRepository.find({
+      where: { projectId },
+      relations: ['damagePhotos'],
+    });
   }
 
   async findOne(id: number) {
-    const dismantle = await this.dismantlesRepository.findOne({ where: { id } });
+    const dismantle = await this.dismantlesRepository.findOne({
+      where: { id },
+      relations: ['damagePhotos'],
+    });
     if (!dismantle) {
       throw new NotFoundException(`Dismantle with ID ${id} not found`);
     }

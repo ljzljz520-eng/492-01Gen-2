@@ -17,8 +17,23 @@ export class WorkersService {
     return this.workersRepository.save(worker);
   }
 
-  findAll() {
-    return this.workersRepository.find();
+  findAll(type?: string) {
+    const where: any = {};
+    if (type) {
+      where.type = type;
+    }
+    return this.workersRepository.find({ where });
+  }
+
+  findAvailable(type?: string, needNightPermit?: boolean) {
+    const where: any = { isAvailable: true };
+    if (type) {
+      where.type = type;
+    }
+    if (needNightPermit) {
+      where.hasNightWorkPermit = true;
+    }
+    return this.workersRepository.find({ where });
   }
 
   async findOne(id: number) {
